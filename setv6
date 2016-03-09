@@ -1,0 +1,1 @@
+ipconfig -u -x /net ether /net/ether0 add fe80::1eb7:2cff:feee:534c /64
