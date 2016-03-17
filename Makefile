@@ -1,6 +1,6 @@
 #
 CC=		x86_64-ucb-akaros-gcc
-CFLAGS=		-Wall -O2 -I.
+CFLAGS=		-Wall -Wno-format -O2 -I.
 LIBS=		-lndblib -liplib -lbenchutil
 TARG=		ipconfig
 
