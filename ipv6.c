@@ -236,7 +236,7 @@ opt_sprint(uint8_t *ps, uint8_t *pe, char *buf, size_t size)
 				return;
 			}
 			snprintf(p, sizeof p,
-			         " option=%s pref=%I preflen=%3.3d"
+			         " option=%s pref=%R preflen=%3.3d"
 			         " lflag=%1.1d aflag=%1.1d unused1=%1.1d"
 			         " validlt=%ud preflt=%ud unused2=%1.1d",
 			         optname(otype),
@@ -324,7 +324,7 @@ dialicmp(uint8_t *dst, int dport, int *ctlfd)
 		exit(-1);
 	}
 
-	n = snprintf(cmsg, sizeof cmsg, "connect %I!%d!r %d", dst, dport, dport);
+	n = snprintf(cmsg, sizeof cmsg, "connect %R!%d!r %d", dst, dport, dport);
 	m = write(cfd, cmsg, n);
 	if (m < n) {
 		fprintf(stderr, "dialicmp: can't write %s to %s: %r", cmsg, name);
@@ -379,12 +379,12 @@ ip6cfg(int autoconf)
 	else
 		n = sprintf(buf, "add");
 
-	n += snprintf(buf + n, sizeof buf - n, " %I", conf.laddr);
+	n += snprintf(buf + n, sizeof buf - n, " %R", conf.laddr);
 	if (!validip(conf.mask))
 		ipmove(conf.mask, v6defmask);
 	n += snprintf(buf + n, sizeof buf - n, " %M", conf.mask);
 	if (validip(conf.raddr)) {
-		n += snprintf(buf + n, sizeof buf - n, " %I", conf.raddr);
+		n += snprintf(buf + n, sizeof buf - n, " %R", conf.raddr);
 		if (conf.mtu != 0)
 			n += snprintf(buf + n, sizeof buf - n, " %d", conf.mtu);
 	}
@@ -407,7 +407,7 @@ ip6cfg(int autoconf)
 		return -1;
 	}
 
-	snprintf(buf, sizeof buf, "%I", conf.laddr);
+	snprintf(buf, sizeof buf, "%R", conf.laddr);
 	while ((p = fgets(line, sizeof(line), bp)) != NULL) {
 		p[strlen(line) - 1] = 0;
 		if (strcasestr(p, buf) != 0) {
@@ -421,9 +421,9 @@ ip6cfg(int autoconf)
 	if (dupfound)
 		doremove();
 	else {
-		n = sprintf(buf, "add %I %M", conf.laddr, conf.mask);
+		n = sprintf(buf, "add %R %M", conf.laddr, conf.mask);
 		if (validip(conf.raddr)) {
-			n += snprintf(buf + n, sizeof buf - n, " %I", conf.raddr);
+			n += snprintf(buf + n, sizeof buf - n, " %R", conf.raddr);
 			if (conf.mtu != 0)
 				n += snprintf(buf + n, sizeof buf - n, " %d", conf.mtu);
 		}
@@ -464,7 +464,7 @@ sendrs(int fd)
 	if (write(fd, rs, sizeof buff) < sizeof buff)
 		ralog("sendrs: write failed, pkt size %d", sizeof buff);
 	else
-		ralog("sendrs: sent solicitation to %I from %I on %s", rs->dst, rs->src,
+		ralog("sendrs: sent solicitation to %R from %R on %s", rs->dst, rs->src,
 		      conf.dev);
 }
 
@@ -526,7 +526,7 @@ issueadd6(Conf *cf)
 {
 	char *cfg;
 
-	asprintf(&cfg, "add6 %I %d %d %d %lud %lud", cf->v6pref, cf->prefixlen,
+	asprintf(&cfg, "add6 %R %d %d %d %lud %lud", cf->v6pref, cf->prefixlen,
 	         cf->onlink, cf->autoflag, cf->validlt, cf->preflt);
 	ewrite(cf->cfd, cfg);
 	free(cfg);
@@ -576,7 +576,7 @@ recvrahost(uint8_t buf[], int pktlen)
 			if (!ISIPV6LINKLOCAL(ra->src)) {
 				ralog(
 				    "recvrahost: non-link-local src addr for "
-				    "router adv %I",
+				    "router adv %R",
 				    ra->src);
 				return;
 			}
@@ -588,7 +588,7 @@ recvrahost(uint8_t buf[], int pktlen)
 				return;
 			}
 
-			n = snprintf(abuf, sizeof abuf, "add ether %I %E", ra->src,
+			n = snprintf(abuf, sizeof abuf, "add ether %R %E", ra->src,
 			             llao->lladdr);
 			if (write(arpfd, abuf, n) < n)
 				ralog("recvrahost: couldn't write to %s/arp", conf.mpoint);
@@ -621,13 +621,13 @@ recvrahost(uint8_t buf[], int pktlen)
 			issueadd6(&conf);
 			if (first) {
 				first = 0;
-				ralog("got initial RA from %I on %s; pfx %I", ra->src, conf.dev,
+				ralog("got initial RA from %R on %s; pfx %R", ra->src, conf.dev,
 				      prfo->pref);
 			}
 			break;
 		default:
 			if (debug)
-				ralog("ignoring optype %d in Routeradv from %I", optype, ra->src);
+				ralog("ignoring optype %d in Routeradv from %R", optype, ra->src);
 		/* fall through */
 		case V6nd_srcaddrs:
 			/* netsbd sends this, so quietly ignore it for now */
@@ -756,7 +756,7 @@ recvrs(uint8_t *buf, int pktlen, uint8_t *sol)
 	}
 
 	llao = (Lladdropt *)&buf[n];
-	n = snprintf(abuf, sizeof abuf, "add ether %I %E", rs->src, llao->lladdr);
+	n = snprintf(abuf, sizeof abuf, "add ether %R %E", rs->src, llao->lladdr);
 	if (write(arpfd, abuf, n) < n) {
 		ralog("recvrs: can't write to %s/arp: %r", conf.mpoint);
 		close(arpfd);

@@ -174,10 +174,17 @@ int plan9 = 1;
 int sendhostname;
 
 char *verbs[] = {
-        [Vadd] "add", [Vremove] "remove", [Vunbind] "unbind",
-        [Vether] "ether", [Vgbe] "gbe", [Vloopback] "loopback",
-        [Vaddpref6] "add6", [Vra6] "ra6", [Vtorus] "torus",
-        [Vtree] "tree", [Vpkt] "pkt",
+    [Vadd] "add",
+    [Vremove] "remove",
+    [Vunbind] "unbind",
+    [Vether] "ether",
+    [Vgbe] "gbe",
+    [Vloopback] "loopback",
+    [Vaddpref6] "add6",
+    [Vra6] "ra6",
+    [Vtorus] "torus",
+    [Vtree] "tree",
+    [Vpkt] "pkt",
 };
 
 void adddefroute(char *, uint8_t *);
@@ -361,7 +368,7 @@ parse6pref(int argc, char **argv)
 		}
 		break;
 	}
-	DEBUG("parse6pref: pref %I len %d", conf.v6pref, conf.prefixlen);
+	DEBUG("parse6pref: pref %R len %d", conf.v6pref, conf.prefixlen);
 }
 
 /* parse router advertisement (keyword, value) pairs */
@@ -421,7 +428,7 @@ init(void)
 	srand(lrand48());
 	if (register_printf_specifier('E', printf_ethaddr, printf_ethaddr_info) != 0)
 		fprintf(stderr, "Installing 'E' failed\n");
-	if (register_printf_specifier('i', printf_ipaddr, printf_ipaddr_info) != 0)
+	if (register_printf_specifier('R', printf_ipaddr, printf_ipaddr_info) != 0)
 		fprintf(stderr, "Installing 'i' failed\n");
 	if (register_printf_specifier('M', printf_ipmask, printf_ipmask_info) != 0)
 		fprintf(stderr, "Installing 'M' failed\n");
@@ -664,7 +671,7 @@ doadd(int retry)
 		}
 	} else if (validip(conf.laddr) && !isv4(conf.laddr)) {
 		if (ip6cfg(0) < 0)
-			fprintf(stderr, "can't start IPv6 on %s, address %I",
+			fprintf(stderr, "can't start IPv6 on %s, address %R",
 			        conf.dev, conf.laddr);
 			exit(-1);
 	}
@@ -746,9 +753,9 @@ doremove(void)
 				warning("can't open %s: %r", conf.mpoint);
 				continue;
 			}
-			snprintf(buf, sizeof buf, "remove %I %M", lifc->ip, lifc->mask);
+			snprintf(buf, sizeof buf, "remove %R %M", lifc->ip, lifc->mask);
 			if (write(cfd, buf, strlen(buf)) != strlen(buf))
-				warning("can't remove %I %M from %s: %r",
+				warning("can't remove %R %M from %s: %r",
 				        lifc->ip, lifc->mask, file);
 			close(cfd);
 		}
@@ -793,9 +800,9 @@ adddefroute(char *mpoint, uint8_t *gaddr)
 		return;
 
 	if (isv4(gaddr))
-		snprintf(buf, sizeof buf, "add 0 0 %I", gaddr);
+		snprintf(buf, sizeof buf, "add 0 0 %R", gaddr);
 	else
-		snprintf(buf, sizeof buf, "add :: /0 %I", gaddr);
+		snprintf(buf, sizeof buf, "add :: /0 %R", gaddr);
 	write(cfd, buf, strlen(buf));
 	close(cfd);
 }
@@ -905,14 +912,14 @@ ip4cfg(void)
 		return -1;
 
 	n = snprintf(buf, sizeof buf, "add");
-	n += snprintf(buf + n, sizeof buf - n, " %I", conf.laddr);
+	n += snprintf(buf + n, sizeof buf - n, " %R", conf.laddr);
 
 	if (!validip(conf.mask))
 		ipmove(conf.mask, defmask(conf.laddr));
-	n += snprintf(buf + n, sizeof buf - n, " %I", conf.mask);
+	n += snprintf(buf + n, sizeof buf - n, " %R", conf.mask);
 
 	if (validip(conf.raddr)) {
-		n += snprintf(buf + n, sizeof buf - n, " %I", conf.raddr);
+		n += snprintf(buf + n, sizeof buf - n, " %R", conf.raddr);
 		if (conf.mtu != 0)
 			n += snprintf(buf + n, sizeof buf - n, " %d", conf.mtu);
 	}
@@ -937,13 +944,13 @@ ipunconfig(void)
 
 	if (!validip(conf.laddr))
 		return;
-	DEBUG("couldn't renew IP lease, releasing %I", conf.laddr);
+	DEBUG("couldn't renew IP lease, releasing %R", conf.laddr);
 	n = sprintf(buf, "remove");
-	n += snprintf(buf + n, sizeof buf - n, " %I", conf.laddr);
+	n += snprintf(buf + n, sizeof buf - n, " %R", conf.laddr);
 
 	if (!validip(conf.mask))
 		ipmove(conf.mask, defmask(conf.laddr));
-	n += snprintf(buf + n, sizeof buf - n, " %I", conf.mask);
+	n += snprintf(buf + n, sizeof buf - n, " %R", conf.mask);
 
 	write(conf.cfd, buf, n);
 
@@ -962,7 +969,7 @@ dhcpquery(int needconfig, int startstate)
 	char buf[256];
 
 	if (needconfig) {
-		snprintf(buf, sizeof buf, "add %I %I", IPnoaddr, IPnoaddr);
+		snprintf(buf, sizeof buf, "add %R %R", IPnoaddr, IPnoaddr);
 		write(conf.cfd, buf, strlen(buf));
 	}
 
@@ -1002,7 +1009,7 @@ dhcpquery(int needconfig, int startstate)
 	close(conf.fd);
 
 	if (needconfig) {
-		snprintf(buf, sizeof buf, "remove %I %I", IPnoaddr, IPnoaddr);
+		snprintf(buf, sizeof buf, "remove %R %R", IPnoaddr, IPnoaddr);
 		write(conf.cfd, buf, strlen(buf));
 	}
 }
@@ -1263,7 +1270,7 @@ dhcprecv(void)
 		warning("dhcprecv: unknown type: %d", type);
 		break;
 	case Offer:
-		DEBUG("got offer from %I ", bp->siaddr);
+		DEBUG("got offer from %R ", bp->siaddr);
 		if (conf.state != Sselecting) {
 			DEBUG("");
 			break;
@@ -1286,7 +1293,7 @@ dhcprecv(void)
 		v4tov6(conf.laddr, bp->yiaddr);
 		memmove(conf.sname, bp->sname, sizeof conf.sname);
 		conf.sname[sizeof conf.sname - 1] = 0;
-		DEBUG("server=%I sname=%s", conf.server, conf.sname);
+		DEBUG("server=%R sname=%s", conf.server, conf.sname);
 		conf.offered = lease;
 		conf.state = Srequesting;
 		dhcpsend(Request);
@@ -1294,7 +1301,7 @@ dhcprecv(void)
 		conf.timeout = time(0) + 4;
 		break;
 	case Ack:
-		DEBUG("got ack from %I ", bp->siaddr);
+		DEBUG("got ack from %R ", bp->siaddr);
 		if (conf.state != Srequesting && conf.state != Srenewing &&
 		    conf.state != Srebinding)
 			break;
@@ -1318,19 +1325,19 @@ dhcprecv(void)
 			if (!optgetaddr(bp->optdata, OBmask, conf.mask))
 				ipmove(conf.mask, IPnoaddr);
 		}
-		DEBUG("ipaddr=%I ipmask=%M ", conf.laddr, conf.mask);
+		DEBUG("ipaddr=%R ipmask=%M ", conf.laddr, conf.mask);
 
 		/*
 		 * get a router address either from the router option
 		 * or from the router that forwarded the dhcp packet
 		 */
 		if (validip(conf.gaddr) && Oflag) {
-			DEBUG("ipgw=%I ", conf.gaddr);
+			DEBUG("ipgw=%R ", conf.gaddr);
 		} else if (optgetaddr(bp->optdata, OBrouter, conf.gaddr)) {
-			DEBUG("ipgw=%I ", conf.gaddr);
+			DEBUG("ipgw=%R ", conf.gaddr);
 		} else if (memcmp(bp->giaddr, IPnoaddr + IPv4off, IPv4addrlen) != 0) {
 			v4tov6(conf.gaddr, bp->giaddr);
-			DEBUG("giaddr=%I ", conf.gaddr);
+			DEBUG("giaddr=%R ", conf.gaddr);
 		}
 
 		/* get dns servers */
@@ -1338,14 +1345,14 @@ dhcprecv(void)
 		n = optgetaddrs(bp->optdata, OBdnserver, conf.dns,
 		                sizeof conf.dns / IPaddrlen);
 		for (i = 0; i < n; i++)
-			DEBUG("dns=%I ", conf.dns + i * IPaddrlen);
+			DEBUG("dns=%R ", conf.dns + i * IPaddrlen);
 
 		/* get ntp servers */
 		memset(conf.ntp, 0, sizeof conf.ntp);
 		n = optgetaddrs(bp->optdata, OBntpserver, conf.ntp,
 		                sizeof conf.ntp / IPaddrlen);
 		for (i = 0; i < n; i++)
-			DEBUG("ntp=%I ", conf.ntp + i * IPaddrlen);
+			DEBUG("ntp=%R ", conf.ntp + i * IPaddrlen);
 
 		/* get names */
 		optgetstr(bp->optdata, OBhostname, conf.hostname, sizeof conf.hostname);
@@ -1366,7 +1373,7 @@ dhcprecv(void)
 					n = optgetaddrs(vopts, OP9fsv4, conf.fs, 2);
 			}
 			for (i = 0; i < n; i++)
-				DEBUG("fs=%I ", conf.fs + i * IPaddrlen);
+				DEBUG("fs=%R ", conf.fs + i * IPaddrlen);
 
 			if (validip(conf.auth) && Oflag)
 				n = 1;
@@ -1376,7 +1383,7 @@ dhcprecv(void)
 					n = optgetaddrs(vopts, OP9authv4, conf.auth, 2);
 			}
 			for (i = 0; i < n; i++)
-				DEBUG("auth=%I ", conf.auth + i * IPaddrlen);
+				DEBUG("auth=%R ", conf.auth + i * IPaddrlen);
 
 			n = optgetp9addrs(vopts, OP9ipaddr, taddr, 1);
 			if (n > 0)
@@ -1387,12 +1394,12 @@ dhcprecv(void)
 			n = optgetp9addrs(vopts, OP9ipgw, taddr, 1);
 			if (n > 0)
 				memmove(conf.gaddr, taddr, IPaddrlen);
-			DEBUG("new ipaddr=%I new ipmask=%M new ipgw=%I",
+			DEBUG("new ipaddr=%R new ipmask=%M new ipgw=%R",
 			      conf.laddr, conf.mask, conf.gaddr);
 		}
 		conf.lease = lease;
 		conf.state = Sbound;
-		DEBUG("server=%I sname=%s", conf.server, conf.sname);
+		DEBUG("server=%R sname=%s", conf.server, conf.sname);
 		break;
 	case Nak:
 		conf.state = Sinit;
@@ -1423,7 +1430,7 @@ openlisten(void)
 
 	if (validip(conf.laddr) &&
 	    (conf.state == Srenewing || conf.state == Srebinding))
-		sprintf(data, "%s/udp!%I!68", conf.mpoint, conf.laddr);
+		sprintf(data, "%s/udp!%R!68", conf.mpoint, conf.laddr);
 	else
 		sprintf(data, "%s/udp!*!68", conf.mpoint);
 	for (n = 0; (cfd = announce9(data, devdir, 0)) < 0; n++) {
@@ -1612,7 +1619,7 @@ optgetp9addrs(uint8_t *ap, int op, uint8_t *ip, int n)
 		slen = strlen(p) + 1;
 		if (parseip(&ip[i * IPaddrlen], p) == -1)
 			fprintf(stderr, "%s: bad address %s\n", argv0, p);
-		DEBUG("got plan 9 option %d addr %I (%s)", op, &ip[i * IPaddrlen], p);
+		DEBUG("got plan 9 option %d addr %R (%s)", op, &ip[i * IPaddrlen], p);
 		p += slen;
 		len -= slen;
 	}
@@ -1767,7 +1774,7 @@ putaddrs(char *buf, size_t size, char *attr, uint8_t *a, int len)
 	char p[256];
 
 	for (i = 0; i < len && validip(a); i += IPaddrlen, a += IPaddrlen) {
-		snprintf(p, sizeof p, "%s=%I\n", attr, a);
+		snprintf(p, sizeof p, "%s=%R\n", attr, a);
 		strlcat(buf, p, size);
 	}
 }
@@ -1786,7 +1793,7 @@ putndb(void)
 		append = 1;
 	else {
 		append = 0;
-		snprintf(p, sizeof p, "ip=%I ipmask=%M ipgw=%I\n",
+		snprintf(p, sizeof p, "ip=%R ipmask=%M ipgw=%R\n",
 		         conf.laddr, conf.mask, conf.gaddr);
 		strlcat(buf, p, sizeof buf);
 	}
@@ -2008,14 +2015,14 @@ optgetx(uint8_t *p, uint8_t opt)
 	switch (o->type) {
 	case Taddr:
 		if (optgetaddr(p, opt, ip))
-			asprintf(&s, "%s=%I", o->name, ip);
+			asprintf(&s, "%s=%R", o->name, ip);
 		break;
 	case Taddrs:
 		n = optgetaddrs(p, opt, ips, 16);
 		if (n > 0)
-			asprintf(&s, "%s=%I", o->name, ips);
+			asprintf(&s, "%s=%R", o->name, ips);
 		for (i = 1; i < n; i++) {
-			asprintf(&ns, "%s %s=%I",
+			asprintf(&ns, "%s %s=%R",
 			         s, o->name, &ips[i * IPaddrlen]);
 			free(s);
 			s = ns;
