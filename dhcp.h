@@ -9,13 +9,13 @@
 
 // Dynamic Host Configuration Protocol / BOOTP
 enum {
-	OfferTimeout = 60,	// when an offer times out
-	MaxLease = 60 * 60,	// longest lease for dynamic binding
-	MinLease = 15 * 60,	// shortest lease for dynamic binding
+	OfferTimeout = 60,		// when an offer times out
+	MaxLease = 60 * 60,		// longest lease for dynamic binding
+	MinLease = 15 * 60,		// shortest lease for dynamic binding
 	StaticLease = 30 * 60,	// lease for static binding
 
-	IPUDPHDRSIZE = 28,	// size of an IP plus UDP header
-	MINSUPPORTED = 576,	// biggest IP message the client must support
+	IPUDPHDRSIZE = 28,		// size of an IP plus UDP header
+	MINSUPPORTED = 576,		// biggest IP message the client must support
 
 	// lengths of some bootp fields
 	Maxhwlen = 16,
@@ -53,11 +53,11 @@ enum {
 	OBlprserver = 9,
 	OBimpressserver = 10,
 	OBrlserver = 11,
-	OBhostname = 12,	// 0x0c
+	OBhostname = 12,		// 0x0c
 	OBbflen = 13,
 	OBdumpfile = 14,
 	OBdomainname = 15,
-	OBswapserver = 16,	// 0x10
+	OBswapserver = 16,		// 0x10
 	OBrootpath = 17,
 	OBextpath = 18,
 	OBipforward = 19,
@@ -73,7 +73,7 @@ enum {
 	OBdiscovermask = 29,
 	OBsupplymask = 30,
 	OBdiscoverrouter = 31,
-	OBrsserver = 32,	// 0x20
+	OBrsserver = 32,		// 0x20
 	OBstaticroutes = 33,
 	OBtrailerencap = 34,
 	OBarptimeout = 35,
@@ -84,12 +84,12 @@ enum {
 	OBnisdomain = 40,
 	OBniserver = 41,
 	OBntpserver = 42,
-	OBvendorinfo = 43,	// 0x2b
+	OBvendorinfo = 43,		// 0x2b
 	OBnetbiosns = 44,
 	OBnetbiosdds = 45,
 	OBnetbiostype = 46,
 	OBnetbiosscope = 47,
-	OBxfontserver = 48,	// 0x30
+	OBxfontserver = 48,		// 0x30
 	OBxdispmanager = 49,
 	OBnisplusdomain = 64,	// 0x40
 	OBnisplusserver = 65,
@@ -104,36 +104,36 @@ enum {
 	OBstdaserver = 76,
 
 	// dhcp v4 options
-	ODipaddr = 50,		// 0x32
+	ODipaddr = 50,			// 0x32
 	ODlease = 51,
 	ODoverload = 52,
-	ODtype = 53,		// 0x35
-	ODserverid = 54,	// 0x36
-	ODparams = 55,		// 0x37
+	ODtype = 53,			// 0x35
+	ODserverid = 54,		// 0x36
+	ODparams = 55,			// 0x37
 	ODmessage = 56,
 	ODmaxmsg = 57,
 	ODrenewaltime = 58,
 	ODrebindingtime = 59,
 	ODvendorclass = 60,
-	ODclientid = 61,	// 0x3d
+	ODclientid = 61,		// 0x3d
 	ODtftpserver = 66,
 	ODbootfile = 67,
 
-	ODpxearch = 93,		// see rfc 4578
+	ODpxearch = 93,			// see rfc 4578
 	ODpxeni = 94,
 	ODpxeguid = 97,
 
 	// plan9 vendor info options, v4 addresses only (deprecated)
-	OP9fsv4 = 128,		// plan9 file servers
-	OP9authv4 = 129,	// plan9 auth servers
+	OP9fsv4 = 128,			// plan9 file servers
+	OP9authv4 = 129,		// plan9 auth servers
 
 	// plan9 vendor info options, textual addresses, thus v4 or v6
-	OP9fs = 130,		// plan9 file servers
-	OP9auth = 131,		// plan9 auth servers
-	OP9ipaddr = 132,	// client's address
-	OP9ipmask = 133,	// client's subnet mask
-	OP9ipgw = 134,		// client's gateway
-	// OP9dns = 135,	// dns servers
+	OP9fs = 130,			// plan9 file servers
+	OP9auth = 131,			// plan9 auth servers
+	OP9ipaddr = 132,		// client's address
+	OP9ipmask = 133,		// client's subnet mask
+	OP9ipgw = 134,			// client's gateway
+	// OP9dns = 135,		// dns servers
 };
 
 // a lease that never expires
@@ -149,25 +149,24 @@ enum {
 	Srebinding,
 };
 
-typedef struct Bootp Bootp;
-struct Bootp {
+struct bootp {
 	// Udphdr (included because of structure alignment on the alpha)
 	uint8_t udphdr[Udphdrsize];
 
-	uint8_t op;			// opcode
-	uint8_t htype;			// hardware type
-	uint8_t hlen;			// hardware address len
-	uint8_t hops;			// hops
-	uint8_t xid[4];			// a random number
-	uint8_t secs[2];		// elapsed since client started booting
+	uint8_t op;						// opcode
+	uint8_t htype;					// hardware type
+	uint8_t hlen;					// hardware address len
+	uint8_t hops;					// hops
+	uint8_t xid[4];					// a random number
+	uint8_t secs[2];				// elapsed since client started booting
 	uint8_t flags[2];
 	uint8_t ciaddr[IPv4addrlen];	// client IP address (client tells server)
 	uint8_t yiaddr[IPv4addrlen];	// client IP address (server tells client)
 	uint8_t siaddr[IPv4addrlen];	// server IP address
 	uint8_t giaddr[IPv4addrlen];	// gateway IP address
-	uint8_t chaddr[Maxhwlen];	// client hardware address
-	char sname[64];			// server host name (optional)
-	char file[Maxfilelen];		// boot file name
+	uint8_t chaddr[Maxhwlen];		// client hardware address
+	char sname[64];					// server host name (optional)
+	char file[Maxfilelen];			// boot file name
 	uint8_t optmagic[4];
 	uint8_t optdata[Maxoptlen];
 };
